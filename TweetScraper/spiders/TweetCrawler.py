@@ -6,6 +6,10 @@ import re
 import json
 import time
 import logging
+
+import xlsxwriter
+from datetime import datetime as t
+
 try:
     from urllib import quote  # Python 2.X
 except ImportError:
@@ -22,9 +26,21 @@ class TweetScraper(CrawlSpider):
     name = 'TweetScraper'
     allowed_domains = ['twitter.com']
 
-    def __init__(self, query='', lang='', crawl_user=False, top_tweet=False):
+    def __init__(self, query='', lang='en', crawl_user=False, top_tweet=False, limit=100):
 
         self.query = query
+        self.limit = limit
+        time = t.now() # get timestamp
+        time_str = time.strftime("%Y-%m-%d__%H:%M:%S")
+        filename = f'scraped/{time_str}__{query}'
+        if top_tweet == False:
+            filename += '__latest'
+        else:
+            filename += '__top'
+
+        self.wrkbk = xlsxwriter.Workbook(filename + '.xlsx')
+        self.wksht = self.wrkbk.add_worksheet()
+        self.rowIndex = 0
         self.url = "https://twitter.com/i/search/timeline?l={}".format(lang)
 
         if not top_tweet:
@@ -79,6 +95,14 @@ class TweetScraper(CrawlSpider):
                 if tweet['text'] == '':
                     # If there is not text, we ignore the tweet
                     continue
+
+                # print("tweet found: ", tweet['text'])
+                self.wksht.write(self.rowIndex, 0, tweet['text']) # label)
+                if self.rowIndex == int(self.limit):
+                    print("------HIT LIMIT; CAN KILL PROGRAM------")
+                    self.wrkbk.close()
+                self.rowIndex += 1
+
 
                 ### get meta data
                 tweet['url'] = item.xpath('.//@data-permalink-path').extract()[0]
@@ -161,6 +185,7 @@ class TweetScraper(CrawlSpider):
                     yield user
             except:
                 logger.error("Error tweet:\n%s" % item.xpath('.').extract()[0])
+                print("ERROR")
                 # raise
 
     def extract_one(self, selector, xpath, default=None):
