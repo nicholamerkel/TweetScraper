@@ -18,6 +18,7 @@ ITEM_PIPELINES = {
 
 # settings for where to save data on disk
 SAVE_TWEET_PATH = './Data/tweet/'
+# SAVE_TWEET_PATH = './Data/predict_tweets'
 SAVE_USER_PATH = './Data/user/'
 
 # settings for mongodb
