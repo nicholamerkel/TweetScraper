@@ -7,11 +7,6 @@ import json
 import time
 import logging
 
-# import xlsxwriter
-# from openpyxl import Workbook
-# from openpyxl import load_workbook
-from datetime import datetime as t
-
 try:
     from urllib import quote  # Python 2.X
 except ImportError:
@@ -32,19 +27,7 @@ class TweetScraper(CrawlSpider):
 
         self.query = query
         self.limit = limit
-        time = t.now() # get timestamp
-        time_str = time.strftime("%Y-%m-%d__%H:%M:%S")
-        self.filename = f'scraped/{time_str}__{query}'
-        if top_tweet == False:
-            self.filename += '__latest'
-        else:
-            self.filename += '__top'
 
-        # self.wrkbk = xlsxwriter.Workbook(filename + '.xlsx')
-        # self.wksht = self.wrkbk.add_worksheet()
-        # self.wrkbk = Workbook()
-        # self.wksht = self.wrkbk.active
-        # print(f'WORKSHEET NAMES: ', self.wrkbk.sheetnames)
         self.rowIndex = 0
 
         self.url = "https://twitter.com/i/search/timeline?l={}".format(lang)
@@ -95,18 +78,14 @@ class TweetScraper(CrawlSpider):
 
                 ### get text content
                 tweet['text'] = ' '.join(
-                    item.xpath('.//div[@class="js-tweet-text-container"]/p//text()').extract()).replace(' # ',
-                                                                                                        '#').replace(
-                    ' @ ', '@').replace(' /', '/').replace('/ ', '/')
+                    item.xpath('.//div[@class="js-tweet-text-container"]/p//text()').extract()).replace(' # ','#').replace(' @ ', '@').replace(' /', '/').replace('/ ', '/')
                 if tweet['text'] == '':
                     # If there is not text, we ignore the tweet
                     continue
 
-                # self.wksht.write(self.rowIndex, 0, cleaned)
                 if self.rowIndex >= int(self.limit):
                     print("***************REACHED LIMIT; CAN KILL PROGRAM***************")
                     continue
-                #     self.wrkbk.close()
                 self.rowIndex += 1
 
 

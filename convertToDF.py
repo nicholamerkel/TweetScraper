@@ -1,4 +1,5 @@
 import pandas as pd
+import string
 import glob
 import json
 import re
@@ -16,10 +17,11 @@ def main(filename):
         json_dict = json.loads(json_string)
 
         text = json_dict['text']
-        text = re.sub(r'http\S+', '', text) # remove links
-        text = re.sub(r'\S+.com\S+', '', text) # remove links with .com
-        text = re.sub(r'#', '', text) 
-        text = re.sub(r'pic\.twitter\S+', '', text) # remove pictures
+        text = re.sub(r'http.+', '', text) # remove links
+        text = re.sub(r'pic\.twitter\S+', '', text) # remove links to pictures
+        text = re.sub(r'[^\w\s]','',text) # remove punctuation (including @ and # for mentions and RTs)
+        # text = re.sub(r'\d+', '', text) # remove any numbers -- contain no sentiment
+
         if text == '': continue # if no text left... ignore that tweet!
 
         # url = json_dict['url']

@@ -1,1 +1,1 @@
-scrapy crawl TweetScraper -a query=coronavirus -a top_tweet=True -a limit=300
+scrapy crawl TweetScraper -a query="coronavirus OR covid" -a top_tweet=True -a limit=2000
