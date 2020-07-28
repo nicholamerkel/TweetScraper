@@ -10,7 +10,7 @@ import argparse
 
 def main(args):
     filename = args['filename']
-    removeUncleanedText = args['removeUncleanedText']
+    cleanText = args['cleanText']
     files = glob.glob('Data/tweet/*')
 
     tweets = []
@@ -19,23 +19,22 @@ def main(args):
         json_dict = json.loads(json_string)
 
         text = json_dict['text']
-        cleanedText = text.lower()
-        cleanedText = re.sub(r'http.+', '', cleanedText) # remove links
-        cleanedText = re.sub(r'pic\.twitter\S+', '', cleanedText) # remove links to pictures
-        cleanedText = re.sub(r'@#\S*', '', cleanedText) # remove mentions and hashtags
-        cleanedText = re.sub(r'[\"\'\\/_-]', '', cleanedText) # removes quotations,underscores,forward and backslash, etc. just keeps sentence punctuation
-        # cleanedText = re.sub(r'[^\w\s]', '', cleanedText) # remove punctuation (including @ and # for mentions and RTs)
+        text = re.sub(r'http.+', '', text) # remove links
+        text = re.sub(r'pic\.twitter\S+', '', text) # remove links to pictures
+        if text == '': continue # if no text left... ignore that tweet!
 
-        if cleanedText == '': continue # if no text left... ignore that tweet!
-
-        if removeUncleanedText:
-            info = {
-                'cleanedText' : cleanedText
-            }
-        else: # keep uncleaned, unformatted text (ie. original tweet text)
+        if cleanText: # specified to clean text (but keep both)
+            cleaned = text.lower()
+            cleaned = re.sub(r'@#\S*', '', cleaned) # remove mentions and hashtags
+            cleaned = re.sub(r'[()\"\'\\/_-]', '', cleaned) # removes quotations,underscores,forward and backslash, etc. just keeps sentence punctuation
+            # cleaned = re.sub(r'[^\w\s]', '', cleaned) # remove punctuation (including @ and # for mentions and RTs)
             info = {
                 'text' : text,
                 'cleanedText' : cleanedText
+            }
+        else:
+            info = {
+                'text' : text
             }
         tweets.append(info)
 
@@ -48,13 +47,13 @@ def main(args):
     df = df.replace({'\r': ' '}, regex=True) # remove carriage return in the dataframe
     df.to_excel(f"scraped/{filename}", index=False)
     print(f"tweets ready. file can be found at: scraped/{filename}")
-    if removeUncleanedText: print("in format: <cleaned tweet text>")
-    else: print("in format: <cleanedTweetText> <originalTweetText>")
+    if cleanText: print("in format: <originalTweetText> <cleaned tweet text>")
+    else: print("in format: <originalTweetText>")
 
 if __name__ ==  '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument("--filename", required=True, type=str, help="specify filename to write to")
-    ap.add_argument("--removeUncleanedText", default=False, action='store_true', help="flag specifies that uncleaned text from tweet will be discarded")
+    ap.add_argument("--cleanText", default=False, action='store_true', help="keep original text but also includes clean version (ie. without unneccessary punctuation, mentions, hashtags). note, links to websites/photos will always be removed from text")
 
     args = vars(ap.parse_args())
     main(args)
