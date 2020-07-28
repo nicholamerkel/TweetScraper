@@ -79,6 +79,7 @@ class TweetScraper(CrawlSpider):
                 ### get text content
                 tweet['text'] = ' '.join(
                     item.xpath('.//div[@class="js-tweet-text-container"]/p//text()').extract()).replace(' # ','#').replace(' @ ', '@').replace(' /', '/').replace('/ ', '/')
+
                 if tweet['text'] == '':
                     # If there is not text, we ignore the tweet
                     continue
@@ -87,7 +88,6 @@ class TweetScraper(CrawlSpider):
                     print("***************REACHED LIMIT; CAN KILL PROGRAM***************")
                     continue
                 self.rowIndex += 1
-
 
                 ### get meta data
                 tweet['url'] = item.xpath('.//@data-permalink-path').extract()[0]
