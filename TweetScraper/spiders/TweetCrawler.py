@@ -23,17 +23,18 @@ class TweetScraper(CrawlSpider):
     name = 'TweetScraper'
     allowed_domains = ['twitter.com']
 
-    def __init__(self, query='', lang='en', crawl_user=False, top_tweet=False, limit=100):
+    def __init__(self, query='', lang='en', crawl_user=False, top_tweet=False, limit=100, verified=None):
 
-        self.query = query
+        if verified == True: self.query = query + " filter:verified" # True, specifically looking for only verified users
+        elif verified is None: self.query = query # None (ie not specified), ok with mix of verified and unverified users
+        else: self.query = query + " -filter:verified" # False, specifically looking for UN-verified users
+
         self.limit = limit
-
         self.rowIndex = 0
-
         self.url = "https://twitter.com/i/search/timeline?l={}".format(lang)
 
-        if not top_tweet:
-            self.url = self.url + "&f=tweets"
+        if not top_tweet: self.url = self.url + "&f=tweets"
+
 
         self.url = self.url + "&q=%s&src=typed&max_position=%s"
 
@@ -41,6 +42,7 @@ class TweetScraper(CrawlSpider):
 
     def start_requests(self):
         url = self.url % (quote(self.query), '')
+        print(f"******starting request with url: {url}")
         yield http.Request(url, callback=self.parse_page)
 
     def parse_page(self, response):
@@ -85,7 +87,9 @@ class TweetScraper(CrawlSpider):
                     continue
 
                 if self.rowIndex >= int(self.limit):
-                    print("***************REACHED LIMIT; CAN KILL PROGRAM***************")
+                    if self.rowIndex == int(self.limit):
+                        print("***************REACHED LIMIT; CAN KILL PROGRAM***************")
+                        self.rowIndex += 1
                     continue
                 self.rowIndex += 1
 

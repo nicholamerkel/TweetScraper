@@ -11,7 +11,7 @@ import argparse
 def main(args):
     filename = args['filename']
     cleanText = args['cleanText']
-    files = glob.glob('Data/tweet/*')
+    files = glob.glob('Data/tweet/UNverified_07292020/*')
 
     tweets = []
     for file in files:
